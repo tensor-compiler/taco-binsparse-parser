@@ -1,4 +1,4 @@
-# bsp_taco library (Juni Kim)
+# bsp_taco library (by Juni Kim)
 
 This is a library that allows binsparse files to be read as, and read into,
 [taco](https://github.com/tensor-compiler/taco) objects. This is a standard
