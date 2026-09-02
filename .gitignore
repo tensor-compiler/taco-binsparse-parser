@@ -1,5 +1,6 @@
 scripts
 venv
 build
+build-
 ._*
 tensor_test_files
