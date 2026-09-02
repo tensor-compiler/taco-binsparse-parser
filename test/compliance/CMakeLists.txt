@@ -7,11 +7,11 @@ SPDX-License-Identifier: BSD-3-Clause
 find_package(ZLIB REQUIRED)
 
 add_library(cnpy_vendor STATIC
-  ${PROJECT_SOURCE_DIR}/third_party/cnpy/cnpy.cpp
+  ${binsparse_SOURCE_DIR}/third_party/cnpy/cnpy.cpp
   cnpy_c.cpp
 )
 target_include_directories(cnpy_vendor PUBLIC
-  ${PROJECT_SOURCE_DIR}/third_party/cnpy
+  ${binsparse_SOURCE_DIR}/third_party/cnpy
   ${CMAKE_CURRENT_SOURCE_DIR}
 )
 target_link_libraries(cnpy_vendor PUBLIC ZLIB::ZLIB)
@@ -25,9 +25,10 @@ add_executable(npy_to_binsparse npy_to_binsparse.c)
 target_link_libraries(npy_to_binsparse PRIVATE compliance_core cnpy_vendor)
 set_target_properties(npy_to_binsparse PROPERTIES LINKER_LANGUAGE CXX)
 
-add_executable(binsparse_to_npy binsparse_to_npy.c)
-target_link_libraries(binsparse_to_npy PRIVATE compliance_core cnpy_vendor)
+add_executable(binsparse_to_npy binsparse_to_npy.cpp)
+target_link_libraries(binsparse_to_npy PRIVATE compliance_core cnpy_vendor
+                                                   bsp-to-taco)
 set_target_properties(binsparse_to_npy PROPERTIES LINKER_LANGUAGE CXX)
 
-add_executable(binsparse_to_binsparse binsparse_to_binsparse.c)
-target_link_libraries(binsparse_to_binsparse PRIVATE compliance_core)
+add_executable(binsparse_to_binsparse binsparse_to_binsparse.cpp)
+target_link_libraries(binsparse_to_binsparse PRIVATE compliance_core bsp-to-taco)

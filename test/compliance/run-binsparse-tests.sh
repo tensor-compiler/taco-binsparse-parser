@@ -50,5 +50,6 @@ done
 export BINSPARSE_BIN="${executable_dir}"
 (
   cd "${tests_dir}"
-  pixi run -e test pytest -m hdf5 binsparse_tests/ "$@"
+  pixi run -e test pytest -m hdf5 \
+    --skips-file "${script_dir}/skips.txt" binsparse_tests/ "$@"
 )

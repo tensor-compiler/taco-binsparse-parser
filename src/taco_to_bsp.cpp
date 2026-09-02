@@ -35,7 +35,9 @@ static inline bsp_type_t getTacoDataType(taco::Datatype type) {
 
 static bsp_array_t makeBspIndexArray(taco::Array arr) {
   taco_uassert(arr.getType() == taco::Int32);
-  bsp_array_t res = bsp_construct_array_t(arr.getSize(), BSP_INT32);
+  bsp_array_t res;
+  if (bsp_construct_array_t(&res, arr.getSize(), BSP_INT32) != BSP_SUCCESS)
+    taco_uerror << "Unable to allocate Binsparse index array";
   memcpy(res.data, arr.getData(), taco::Int32.getNumBytes() * arr.getSize());
   return res;
 }
@@ -120,20 +122,23 @@ bsp_tensor_t bsp_taco::makeBspTensor(taco::TensorBase tacoTensor) {
     res.nnz = values.getSize();
     bsp_element_t* data = (bsp_element_t*) malloc(sizeof(bsp_element_t));
 
-    bsp_array_t valuesArray =
-        bsp_construct_array_t(res.nnz, getTacoDataType(values.getType()));
+    bsp_array_t valuesArray;
+    if (bsp_construct_array_t(&valuesArray, res.nnz,
+                              getTacoDataType(values.getType())) !=
+        BSP_SUCCESS)
+      taco_uerror << "Unable to allocate Binsparse values array";
     memcpy(valuesArray.data, values.getData(),
            values.getType().getNumBytes() * values.getSize());
 
-    bsp_array_t* arr = (bsp_array_t*) malloc(sizeof(bsp_array_t));
-    *arr = valuesArray;
-
-    curLevel->data = arr;
+    data->values = valuesArray;
+    curLevel->data = data;
   }
   return res;
 }
 
 void bsp_taco::writeBinSparse(taco::TensorBase taco, std::string filename) {
   bsp_tensor_t tensor = bsp_taco::makeBspTensor(taco);
-  bsp_write_tensor(filename.data(), tensor, NULL, NULL, 9);
+  if (bsp_write_tensor(filename.data(), tensor, NULL, NULL, 9) != BSP_SUCCESS)
+    taco_uerror << "Unable to write Binsparse tensor";
+  bsp_destroy_tensor_t(tensor);
 }

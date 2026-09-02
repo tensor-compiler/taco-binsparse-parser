@@ -1,0 +1,6 @@
+# TACO has no representation analogous to Binsparse iso-valued storage.
+boolean-iso-
+signed-iso-
+unsigned-iso-
+floating-iso-
+complex-iso-

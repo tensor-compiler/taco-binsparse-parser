@@ -1,4 +1,3 @@
-#include "taco/tensor.h"
 #include <binsparse/tensor.h>
 #include <binsparse/write_tensor.h>
 #include <taco.h>

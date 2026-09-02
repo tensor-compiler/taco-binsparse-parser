@@ -1,5 +1,8 @@
 #include <bsp_taco/bsp_to_taco.hpp>
 
+#include <complex>
+#include <cstring>
+
 static std::vector<int> getDimensions(bsp_tensor_t& tensor) {
   std::vector<int> dims(tensor.rank);
   for (int i = 0; i < tensor.rank; i++) {
@@ -136,18 +139,53 @@ static taco::Index createTacoIndex(bsp_tensor_t& tensor, taco::Format& format) {
   return taco::Index(format, modeIndices);
 }
 
+template <typename T>
+static taco::Literal scalarLiteral(const bsp_array_t& array) {
+  T value;
+  memcpy(&value, array.data, sizeof(value));
+  return taco::Literal(value);
+}
+
+static taco::Literal getFillLiteral(const bsp_array_t& fill) {
+  switch (fill.type) {
+  case BSP_UINT8: return scalarLiteral<uint8_t>(fill);
+  case BSP_UINT16: return scalarLiteral<uint16_t>(fill);
+  case BSP_UINT32: return scalarLiteral<uint32_t>(fill);
+  case BSP_UINT64: return scalarLiteral<uint64_t>(fill);
+  case BSP_INT8:
+  case BSP_BINT8: return scalarLiteral<int8_t>(fill);
+  case BSP_INT16: return scalarLiteral<int16_t>(fill);
+  case BSP_INT32: return scalarLiteral<int32_t>(fill);
+  case BSP_INT64: return scalarLiteral<int64_t>(fill);
+  case BSP_FLOAT32: return scalarLiteral<float>(fill);
+  case BSP_FLOAT64: return scalarLiteral<double>(fill);
+  case BSP_COMPLEX_FLOAT32:
+    return scalarLiteral<std::complex<float>>(fill);
+  case BSP_COMPLEX_FLOAT64:
+    return scalarLiteral<std::complex<double>>(fill);
+  default:
+    taco_uerror << "Unsupported fill type supplied to taco converter";
+    return taco::Literal();
+  }
+}
+
 /*
 Creates a taco object from a bsp tensor.
 Note that this function **consumes** the bsp tensor object!
 */
-taco::TensorBase bsp_taco::makeTacoTensor(bsp_tensor_t& tensor) {
+taco::TensorBase bsp_taco::makeTacoTensor(bsp_tensor_t& tensor,
+                                          const bsp_array_t* fill) {
+  if (tensor.is_iso)
+    taco_uerror << "TACO does not support iso-valued tensor storage";
   bsp_level_t* level = tensor.level;
 
   bsp_array_t values = bsp_get_tensor_values(tensor);
   taco::Format tacoFormat = createTacoFormat(tensor);
   taco::Index tacoIndex = createTacoIndex(tensor, tacoFormat);
+  taco::Literal tacoFill =
+      fill == nullptr ? taco::Literal() : getFillLiteral(*fill);
   taco::TensorBase tacoTensor(getTacoDataType(values), getDimensions(tensor),
-                              tacoFormat);
+                              tacoFormat, tacoFill);
   // tacoTensor.setNeedsPack(false);
   auto storage = tacoTensor.getStorage();
   storage.setIndex(tacoIndex);
@@ -158,6 +196,5 @@ taco::TensorBase bsp_taco::makeTacoTensor(bsp_tensor_t& tensor) {
 
 taco::TensorBase bsp_taco::readBinSparse(std::string filename) {
   bsp_tensor_t tensor = bsp_read_tensor(filename.data(), NULL);
-  taco::TensorBase taco = bsp_taco::makeTacoTensor(tensor);
-  return taco;
+  return bsp_taco::makeTacoTensor(tensor);
 }
