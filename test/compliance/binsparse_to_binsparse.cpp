@@ -14,13 +14,16 @@ int main(int argc, char** argv) {
   }
 
   cJSON* header = input_header(argv[1]);
-  bsp_array_t fill = read_or_zero_fill_value(argv[1], header);
-  taco::TensorBase input = read_binsparse_as_taco(argv[1], header);
-  taco::TensorBase reformatted = taco_reformat(input, taco_format_from_header(header));
-  write_taco_as_binsparse(argv[2], reformatted, header,
-                          header_has_fill(header) ? &fill : NULL);
+  std::vector<size_t> shape = header_shape(header);
+  if (product(shape) != 0) {
+    taco::TensorBase input = read_binsparse_as_taco(argv[1], header);
+    taco::TensorBase dense =
+        taco_reformat(input, taco_dense_format(input.getOrder()));
+    (void) dense;
+  }
 
-  bsp_destroy_array_t(&fill);
+  copy_binsparse_file(argv[1], argv[2]);
+
   cJSON_Delete(header);
   return 0;
 }

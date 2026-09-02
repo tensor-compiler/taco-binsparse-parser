@@ -34,12 +34,32 @@ static inline bsp_type_t getTacoDataType(taco::Datatype type) {
 }
 
 static bsp_array_t makeBspIndexArray(taco::Array arr) {
-  taco_uassert(arr.getType() == taco::Int32);
   bsp_array_t res;
   if (bsp_construct_array_t(&res, arr.getSize(), BSP_INT32) != BSP_SUCCESS)
     taco_uerror << "Unable to allocate Binsparse index array";
-  memcpy(res.data, arr.getData(), taco::Int32.getNumBytes() * arr.getSize());
+  int32_t* out = static_cast<int32_t*>(res.data);
+  if (arr.getData() == nullptr) {
+    memset(out, 0, arr.getSize() * sizeof(int32_t));
+    return res;
+  }
+  for (size_t i = 0; i < arr.getSize(); ++i) {
+    size_t value = arr.get(i).getAsIndex();
+    taco_uassert(value <= static_cast<size_t>(INT32_MAX))
+        << "TACO coordinate is too large for Binsparse int32 storage";
+    out[i] = static_cast<int32_t>(value);
+  }
   return res;
+}
+
+static taco::Array getCoordinateIndexArray(taco::ModeIndex modeIndex) {
+  if (modeIndex.numIndexArrays() == 1) {
+    return modeIndex.getIndexArray(0);
+  }
+  if (modeIndex.numIndexArrays() >= 2) {
+    return modeIndex.getIndexArray(1);
+  }
+  taco_uerror << "Missing TACO coordinate index array";
+  return taco::Array();
 }
 
 bsp_tensor_t bsp_taco::makeBspTensor(taco::TensorBase tacoTensor) {
@@ -92,8 +112,10 @@ bsp_tensor_t bsp_taco::makeBspTensor(taco::TensorBase tacoTensor) {
       data->rank = boundary - dimsPtr;
       data->indices = (bsp_array_t*) malloc(sizeof(bsp_array_t) * data->rank);
       for (int indicesIdx = 0; indicesIdx < data->rank; indicesIdx++) {
+        taco::Array coords =
+            getCoordinateIndexArray(index.getModeIndex(dimsPtr + indicesIdx));
         data->indices[indicesIdx] = makeBspIndexArray(
-            index.getModeIndex(dimsPtr + indicesIdx).getIndexArray(1));
+            coords);
       }
 
       data->child = (bsp_level_t*) malloc(sizeof(bsp_level_t));

@@ -17,6 +17,7 @@ inline taco::TensorBase taco_reformat(const taco::TensorBase& input,
   output.compile();
   output.assemble();
   output.compute();
+  output.pack();
   return output;
 }
 

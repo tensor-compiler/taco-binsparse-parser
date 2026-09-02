@@ -21,7 +21,7 @@ add_subdirectory(src)
 FetchContent_Declare(
   binsparse
   GIT_REPOSITORY https://github.com/Binsparse/binsparse-reference-c
-  GIT_TAG d87eaa9a460183e11722073a608c0a2dfb50d68f
+  GIT_TAG 13e56902c6f729822730297a5d13bbdbc62e619b
 )
 FetchContent_MakeAvailable(binsparse)
 target_include_directories(bsp-to-taco PUBLIC ${binsparse_SOURCE_DIR}/include)
