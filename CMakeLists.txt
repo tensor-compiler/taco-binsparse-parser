@@ -8,6 +8,7 @@ add_library(bsp-to-taco SHARED)
 cmake_policy(SET CMP0079 NEW)
 
 set(CMAKE_C_STANDARD 11)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 target_compile_features(bsp-to-taco PUBLIC cxx_std_11)
 
 #set(CMAKE_C_FLAGS "-O3 -march=native")
