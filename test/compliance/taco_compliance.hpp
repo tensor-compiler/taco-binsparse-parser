@@ -141,6 +141,21 @@ inline bsp_type_t header_value_type(cJSON* header) {
   return type;
 }
 
+inline void normalize_array_type(bsp_array_t* array, bsp_type_t type) {
+  if (array->type == type) {
+    return;
+  }
+  if ((type == BSP_COMPLEX_FLOAT32 || type == BSP_COMPLEX_FLOAT64) &&
+      bsp_fp_array_to_complex(array) == BSP_SUCCESS && array->type == type) {
+    return;
+  }
+  if (type == BSP_BINT8 && array->type == BSP_INT8) {
+    array->type = BSP_BINT8;
+    return;
+  }
+  array->type = type;
+}
+
 inline bsp_array_t read_hdf5_array(const char* path, const char* name) {
   hid_t file = H5Fopen(path, H5F_ACC_RDONLY, H5P_DEFAULT);
   if (file < 0) {
@@ -162,7 +177,7 @@ inline bsp_array_t read_or_zero_fill_value(const char* path, cJSON* header) {
   bsp_type_t type = header_value_type(header);
   if (header_has_fill(header)) {
     bsp_array_t fill = read_hdf5_array(path, "fill_value");
-    fill.type = type;
+    normalize_array_type(&fill, type);
     return fill;
   }
   bsp_array_t fill;
@@ -196,6 +211,7 @@ inline bsp_tensor_t custom_tensor_from_binsparse(const char* path,
   tensor.level->kind = BSP_TENSOR_ELEMENT;
   bsp_element_t* element = (bsp_element_t*) malloc(sizeof(bsp_element_t));
   element->values = read_hdf5_array(path, "values");
+  normalize_array_type(&element->values, header_value_type(header));
   tensor.level->data = element;
   return tensor;
 }
