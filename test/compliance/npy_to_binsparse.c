@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include "cnpy_c.h"
+#include "npy_c.h"
 #include "reformat.h"
 
 #include <stdint.h>
@@ -19,7 +19,7 @@ static size_t product(const size_t* shape, size_t rank) {
   return size;
 }
 
-static size_t offset(const cnpy_c_array* array, const size_t* coord) {
+static size_t offset(const npy_c_array* array, const size_t* coord) {
   size_t result = 0;
   for (size_t d = 0; d < array->rank; ++d)
     result += coord[d] * array->strides[d];
@@ -27,7 +27,7 @@ static size_t offset(const cnpy_c_array* array, const size_t* coord) {
 }
 
 int main(int argc, char** argv) {
-  cnpy_c_array dense = {0}, pattern = {0}, fill = {0};
+  npy_c_array dense = {0}, pattern = {0}, fill = {0};
   cJSON *header, *shape_json, *custom, *description;
   const char *format, *value_name;
   bsp_type_t value_type;
@@ -45,8 +45,8 @@ int main(int argc, char** argv) {
                     "<fill_value_in> <header_in> <tensor_out>\n");
     return 2;
   }
-  if (cnpy_c_load(argv[1], &dense) || cnpy_c_load(argv[2], &pattern) ||
-      cnpy_c_load(argv[3], &fill))
+  if (npy_c_load(argv[1], &dense) || npy_c_load(argv[2], &pattern) ||
+      npy_c_load(argv[3], &fill))
     die("cannot read NPY input");
   if (dense.rank != pattern.rank || dense.size != pattern.size ||
       pattern.word_size != 1 || fill.size != 1)
@@ -157,10 +157,8 @@ int main(int argc, char** argv) {
   result.level = build_level(&context, description, &entries, stored_dims, 0,
                              root_ptr, 1, true, values);
   if (!strcmp(format, "custom")) {
-    cJSON* user = cJSON_CreateObject();
-    if (bsp_write_tensor(argv[5], result, NULL, user, 0) != BSP_SUCCESS)
+    if (bsp_write_tensor(argv[5], result, NULL, "{}", 0) != BSP_SUCCESS)
       die("cannot write Binsparse tensor");
-    cJSON_Delete(user);
   } else if (write_predefined(argv[5], result, format, 0) != BSP_SUCCESS) {
     die("cannot write Binsparse tensor");
   }
@@ -179,8 +177,8 @@ int main(int argc, char** argv) {
   free(stored_dims);
   cJSON_Delete(description);
   cJSON_Delete(header);
-  cnpy_c_destroy(&dense);
-  cnpy_c_destroy(&pattern);
-  cnpy_c_destroy(&fill);
+  npy_c_destroy(&dense);
+  npy_c_destroy(&pattern);
+  npy_c_destroy(&fill);
   return 0;
 }

@@ -1,6 +1,6 @@
 include(FetchContent)
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.20)
 project(bsp-to-taco)
 
 add_library(bsp-to-taco SHARED)
@@ -21,7 +21,7 @@ add_subdirectory(src)
 FetchContent_Declare(
   binsparse
   GIT_REPOSITORY https://github.com/Binsparse/binsparse-reference-c
-  GIT_TAG wma/compliance
+  GIT_TAG d87eaa9a460183e11722073a608c0a2dfb50d68f
 )
 FetchContent_MakeAvailable(binsparse)
 target_include_directories(bsp-to-taco PUBLIC ${binsparse_SOURCE_DIR}/include)

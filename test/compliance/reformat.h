@@ -16,6 +16,10 @@
 #include <binsparse/write_tensor.h>
 #include <cJSON/cJSON.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
   size_t* coord;
   size_t value;
@@ -61,3 +65,7 @@ bsp_error_t write_predefined(const char* path, bsp_tensor_t tensor,
 
 bsp_error_t bsp_reformat_file(const char* input, const char* output,
                               cJSON* target_header, int compression);
+
+#ifdef __cplusplus
+}
+#endif

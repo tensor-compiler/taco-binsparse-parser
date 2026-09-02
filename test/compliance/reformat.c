@@ -782,11 +782,9 @@ bsp_error_t bsp_reformat_file(const char* input, const char* output,
   result.level = build_level(&context, description, &entries, stored_dims, 0,
                              root_ptr, 1, true, values);
   if (!strcmp(target_format, "custom")) {
-    cJSON* user = cJSON_CreateObject();
-    if (bsp_write_tensor(output, result, NULL, user, compression) !=
+    if (bsp_write_tensor(output, result, NULL, "{}", compression) !=
         BSP_SUCCESS)
       die("failed to write output tensor");
-    cJSON_Delete(user);
   } else if (write_predefined(output, result, target_format, compression) !=
              BSP_SUCCESS) {
     die("failed to write predefined output");
