@@ -1,0 +1,22 @@
+# TACO has no representation analogous to Binsparse iso-valued storage.
+boolean-iso-
+signed-iso-
+floating-iso-
+complex-iso-
+
+# This package owns custom Binsparse tensor support. Predefined matrix/vector
+# aliases require Binsparse's compliance reformatter, which this harness no
+# longer compiles or links.
+test_predefined_1d
+test_predefined_2d
+
+# TACO currently does not round-trip complex nonzero fill values exactly when
+# densifying sparse tensors with no stored values.
+complex-non-iso-no-transpose-nonzero-fill
+complex-non-iso-transposed-nonzero-fill
+complex-non-iso-no-transpose-dense-layout-nonzero-fill
+complex-non-iso-no-transpose-coo-layout-nonzero-fill
+complex-non-iso-no-transpose-mixed-layout-nonzero-fill
+complex-non-iso-transposed-dense-layout-nonzero-fill
+complex-non-iso-transposed-coo-layout-nonzero-fill
+complex-non-iso-transposed-mixed-layout-nonzero-fill

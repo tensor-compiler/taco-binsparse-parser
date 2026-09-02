@@ -1,6 +1,6 @@
 include(FetchContent)
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.20)
 project(bsp-to-taco)
 
 add_library(bsp-to-taco SHARED)
@@ -8,8 +8,8 @@ add_library(bsp-to-taco SHARED)
 cmake_policy(SET CMP0079 NEW)
 
 set(CMAKE_C_STANDARD 11)
-
-#set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+target_compile_features(bsp-to-taco PUBLIC cxx_std_11)
 
 #set(CMAKE_C_FLAGS "-O3 -march=native")
 set(CMAKE_CXX_FLAGS "-O3 -march=native -Wall -Wno-narrowing -fPIC")
@@ -21,8 +21,8 @@ add_subdirectory(src)
 
 FetchContent_Declare(
   binsparse
-  GIT_REPOSITORY https://github.com/junikimm717/binsparse-reference-c
-  GIT_TAG main
+  GIT_REPOSITORY https://github.com/Binsparse/binsparse-reference-c
+  GIT_TAG 13e56902c6f729822730297a5d13bbdbc62e619b
 )
 FetchContent_MakeAvailable(binsparse)
 target_include_directories(bsp-to-taco PUBLIC ${binsparse_SOURCE_DIR}/include)
@@ -65,7 +65,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${taco_SOURCE_DIR}/include)
 #### Project Configuration
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_BINARY_DIR}/include)
-target_link_libraries(${PROJECT_NAME} PUBLIC binsparse-rc taco)
+target_link_libraries(${PROJECT_NAME} PUBLIC binsparse taco)
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   add_subdirectory(examples)
